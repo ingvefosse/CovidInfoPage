@@ -1,6 +1,8 @@
 <template>
     <nav> 
-        <div class="menu-item"><a href="#"><strong>CovidInfo</strong></a></div>
+        <div class="menu-item">
+            <strong>CovidInfo</strong>
+        </div>
         
 
     </nav>
@@ -26,7 +28,7 @@ export default {
 <style>
 nav .menu-item {
     color: rgb(255, 255, 255);
-    padding: 10px 20px;
+    padding: 5px 10px;
     position: relative;
     text-align: center;
     border-bottom: 0px solid transparent;
