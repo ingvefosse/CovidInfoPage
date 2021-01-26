@@ -1,10 +1,17 @@
 <template>
     <div>
         
-        <div><br>Information from {{selectedCountry}} for {{selectedMonth}}/2020:</div>
-        <div><br>Total number of confirmed cases: {{confirmedCasesThisMonth}}</div>
-        <div><br>Total number of deaths: {{deathsThisMonth}}</div>
+        <div><br> <strong>Information from {{selectedCountry}} for {{selectedMonth}}/2020:</strong></div>
+        
+        <div><br>Total statistics:</div>
+        <li>Total number of confirmed cases: {{confirmedCasesThisMonth}}</li>
+        <li>Total number of recoveries: {{confirmedCasesThisMonth - deathsThisMonth}}</li>
+        <li>Total number of deaths: {{deathsThisMonth}}</li>
 
+        <div><br>Changes this month:</div>
+        <li>New cases this month: {{confirmedCasesThisMonth - confirmedCasesLastMonth}}</li>
+        <li>New amount of recoveries: {{(confirmedCasesThisMonth - confirmedCasesLastMonth) - (deathsThisMonth - deathsLastMonth)}}</li>
+        <li>New deaths this month: {{deathsThisMonth - deathsLastMonth}}</li>
 
     </div>
 </template>
@@ -24,11 +31,10 @@ export default {
             getAPI.get('time_series_confirmed_global')
             .then((response) => {
                 this.APIData = response.data.Document
-                console.log(this.APIData)
-
                 response.data.Document.forEach(element => {
                     if (element.country_region === this.selectedCountry) {
                         this.confirmedCasesThisMonth = this.getLastDayOfMonth(element);
+                        this.confirmedCasesLastMonth = this.getLastDayOfLastMonth(element);
                     } 
                 })
             })
@@ -38,11 +44,10 @@ export default {
             getAPI.get('time_series_deaths_global')
             .then((response) => {
                 this.APIData = response.data.Document
-                console.log(this.APIData)
-
                 response.data.Document.forEach(element => {
                     if (element.country_region === this.selectedCountry) {
                         this.deathsThisMonth = this.getLastDayOfMonth(element);
+                        this.deathsLastMonth = this.getLastDayOfLastMonth(element);
                     } 
                 })
             })
@@ -63,11 +68,46 @@ export default {
             }
         },
 
-        getArrayOfCountries: function(response) {
-            response.Document.forEach(entry => {
-                let country = entry.Document.country_region
-                this.countries.push(country)
-            })
+        getLastDayOfLastMonth: function(response) {
+            this.lastMonth = this.selectedMonth - 1
+            if (response[this.selectedMonth + "/31/20"]) {
+                if (response[this.lastMonth + "/31/20"]) {
+                    return response[this.lastMonth + "/31/20"]
+                }
+                else if (response[this.lastMonth + "/30/20"]) {
+                    return response[this.lastMonth + "/30/20"]
+                }
+                else if (response[this.lastMonth + "/29/20"]) {
+                    return response[this.lastMonth + "/29/20"]
+                }
+                else if(response[this.lastMonth + "/28/20"]) {
+                    return response[this.lastMonth + "/28/20"]
+                }
+            } 
+            else if (response[this.selectedMonth + "/30/20"]) {
+                if (response[this.lastMonth + "/30/20"]) {
+                    return response[this.lastMonth + "/30/20"]
+                }
+                else if (response[this.lastMonth + "/29/20"]) {
+                    return response[this.lastMonth + "/29/20"]
+                }
+                else if(response[this.lastMonth + "/28/20"]) {
+                    return response[this.lastMonth + "/28/20"]
+                }
+            }
+            else if (response[this.selectedMonth + "/29/20"]) {
+                if (response[this.lastMonth + "/29/20"]) {
+                    return response[this.lastMonth + "/29/20"]
+                }
+                else if(response[this.lastMonth + "/28/20"]) {
+                    return response[this.lastMonth + "/28/20"]
+                }
+            }
+            else if(response[this.selectedMonth + "/28/20"]) {
+                if(response[this.lastMonth + "/28/20"]) {
+                    return response[this.lastMonth + "/28/20"]
+                }
+            }
         }
     },
     
@@ -76,7 +116,10 @@ export default {
             APIData: [],
             countries: [],
             confirmedCasesThisMonth: 0,
-            deathsThisMonth: 0
+            confirmedCasesLastMonth: 0,
+            lastMonth: 0,
+            deathsThisMonth: 0,
+            deathsLastMonth: 0
         }
     },
 
@@ -86,12 +129,8 @@ export default {
     },
 
     updated () {
-        console.log('UPDATED START')
-        console.log(this.selectedMonth)
-        console.log(this.selectedCountry)
         this.fetchConfirmedCasesAPI()
         this.fetchConfirmedDeathsAPI()
-        console.log('UPDATED END')
     }
 }
 
